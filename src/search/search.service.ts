@@ -26,10 +26,8 @@ export class SearchService {
   ): Observable<any> {
     const url = 'https://openapi.naver.com/v1/search/book.json';
     const headers = {
-      'Content-Type': 'application/json',
       'X-Naver-Client-Id': this.clientId,
       'X-Naver-Client-Secret': this.clientSecret,
-      'Access-Control-Allow-Origin': '*',
     };
 
     const params = {
