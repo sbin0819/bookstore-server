@@ -21,7 +21,7 @@ export class SearchController {
   @ApiResponse({ status: 500, description: '서버 에러' })
   @UsePipes(new ValidationPipe({ transform: true }))
   search(@Query() searchDto: SearchDto) {
-    const { query, display = 10, start = 1, sort = 'sim' } = searchDto;
+    const { query, display, start, sort } = searchDto;
     return this.searchService.search(query, display, start, sort);
   }
 }

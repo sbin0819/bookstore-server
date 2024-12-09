@@ -1,6 +1,7 @@
 // src/search/dto/search.dto.ts
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class SearchDto {
   @IsString()
@@ -8,7 +9,10 @@ export class SearchDto {
   query: string;
 
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100) // Naver API의 최대 허용값에 맞게 설정
   @ApiPropertyOptional({
     required: false,
     description: '표시할 결과 수',
@@ -17,7 +21,10 @@ export class SearchDto {
   display?: number;
 
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(1000) // Naver API의 최대 허용값에 맞게 설정s
   @ApiPropertyOptional({
     required: false,
     description: '검색 시작 위치',
