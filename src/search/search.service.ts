@@ -1,26 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSearchDto } from './dto/create-search.dto';
-import { UpdateSearchDto } from './dto/update-search.dto';
-
+// src/search/search.service.ts
+import { HttpService } from '@nestjs/axios';
+import { HttpException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { AxiosResponse } from 'axios';
+import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 @Injectable()
 export class SearchService {
-  create(createSearchDto: CreateSearchDto) {
-    return 'This action adds a new search';
+  private readonly clientId: string;
+  private readonly clientSecret: string;
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.clientId = this.configService.get<string>('NAVER_CLIENT_ID');
+    this.clientSecret = this.configService.get<string>('NAVER_CLIENT_SECRET');
   }
 
-  findAll() {
-    return `This action returns all search`;
-  }
+  search(
+    query: string,
+    display = 10,
+    start = 1,
+    sort = 'sim',
+  ): Observable<any> {
+    const url = 'https://openapi.naver.com/v1/search/book.json';
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Naver-Client-Id': this.clientId,
+      'X-Naver-Client-Secret': this.clientSecret,
+      'Access-Control-Allow-Origin': '*',
+    };
 
-  findOne(id: number) {
-    return `This action returns a #${id} search`;
-  }
+    const params = {
+      query,
+      display,
+      start,
+      sort,
+    };
 
-  update(id: number, updateSearchDto: UpdateSearchDto) {
-    return `This action updates a #${id} search`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} search`;
+    return this.httpService.get(url, { headers, params }).pipe(
+      map((response: AxiosResponse) => response.data),
+      catchError((error) => {
+        throw new HttpException(
+          error.response?.data || 'Failed to fetch from Naver API',
+          error.response?.status || 500,
+        );
+      }),
+    );
   }
 }
