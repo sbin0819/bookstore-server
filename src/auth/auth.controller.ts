@@ -1,6 +1,7 @@
 // auth.controller.ts
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -8,42 +9,47 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * 구글 OAuth 로그인 진입점
+   * Google OAuth login entry point
    * - GET /auth/google
-   * - 구글 로그인 페이지로 리다이렉트
+   * - Redirects to Google login page
    */
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
-    // Passport가 알아서 Google 로그인 페이지로 Redirect
+    // Passport automatically redirects to Google login page
   }
 
   /**
-   * 구글 OAuth에서 돌아오는 콜백 URL
+   * Google OAuth callback URL
    * - GET /auth/google/callback
    */
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any) {
-    // 구글 OAuth를 통해 인증된 user 정보는 req.user로 들어옴
+  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
+    // Extract user information from req.user
     const { user } = req;
+    // Generate JWT token
     const jwt = await this.authService.loginWithGoogle(user);
-    return {
-      message: 'Google OAuth 로그인 성공',
-      user,
-      ...jwt, // { access_token: ... }
-    };
+    // Set the access_token in an HTTP-only cookie
+    res.cookie('access_token', jwt.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Set to true in production
+      sameSite: 'lax', // Adjust as needed ('strict', 'lax', 'none')
+      maxAge: 3600000, // 1 hour in milliseconds
+    });
+
+    res.redirect(process.env.CLIENT_CALLBACK_URL);
   }
 
   /**
-   * 보호된 라우트 예시: JWT 토큰 필요
+   * Protected route example: Requires JWT token
    * - GET /auth/profile
    */
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
   getProfile(@Req() req: any) {
     return {
-      message: '인증된 유저만 볼 수 있는 프로필 정보',
+      message: 'Authenticated user profile information',
       user: req.user,
     };
   }

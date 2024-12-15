@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -10,6 +10,7 @@ async function bootstrap() {
     origin: ['http://localhost:3000', 'https://bookstore-mu-blond.vercel.app'],
     credentials: true,
   });
+  app.use(cookieParser());
 
   // Swagger 설정 시작
   const config = new DocumentBuilder()
