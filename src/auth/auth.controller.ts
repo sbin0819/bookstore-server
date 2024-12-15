@@ -31,16 +31,14 @@ export class AuthController {
     // Generate JWT token
     const jwt = await this.authService.loginWithGoogle(user);
     // Set the access_token in an HTTP-only cookie
-    // res.cookie('access_token', jwt.access_token, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === 'production', // Set to true in production
-    //   sameSite: 'lax', // Adjust as needed ('strict', 'lax', 'none')
-    //   maxAge: 3600000, // 1 hour in milliseconds
-    // });
+    res.cookie('access_token', jwt.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Set to true in production
+      sameSite: 'lax', // Adjust as needed ('strict', 'lax', 'none')
+      maxAge: 3600000, // 1 hour in milliseconds
+    });
 
-    // res.redirect(process.env.CLIENT_CALLBACK_URL);
-
-    return;
+    res.redirect(process.env.CLIENT_CALLBACK_URL);
   }
 
   /**
