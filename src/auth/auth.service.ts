@@ -9,7 +9,7 @@ export class AuthService {
   async loginWithGoogle(user: any) {
     const payload = { email: user.email, sub: user.googleId };
     const access_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET, // Ensure this matches JwtStrategy
+      secret: process.env.JWT_SECRET!, // Ensure this matches JwtStrategy
       expiresIn: '1h',
     });
     return { access_token };
