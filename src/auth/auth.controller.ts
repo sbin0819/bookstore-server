@@ -40,7 +40,7 @@ export class AuthController {
 
     // res.redirect(process.env.CLIENT_CALLBACK_URL);
 
-    return res.json(jwt);
+    return;
   }
 
   /**
