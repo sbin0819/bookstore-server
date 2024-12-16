@@ -39,8 +39,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1(@libsql/client@0.14.0)
       '@prisma/client':
-        specifier: ^6.0.1
-        version: 6.0.1(prisma@6.0.1)
+        specifier: ^5.9.1
+        version: 5.22.0(prisma@6.0.1)
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -670,9 +670,9 @@ packages:
     peerDependencies:
       '@libsql/client': ^0.3.5 || ^0.4.0 || ^0.5.0 || ^0.6.0 || ^0.7.0 || ^0.8.0
 
-  '@prisma/client@6.0.1':
-    resolution: {integrity: sha512-60w7kL6bUxz7M6Gs/V+OWMhwy94FshpngVmOY05TmGD0Lhk+Ac0ZgtjlL6Wll9TD4G03t4Sq1wZekNVy+Xdlbg==}
-    engines: {node: '>=18.18'}
+  '@prisma/client@5.22.0':
+    resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
+    engines: {node: '>=16.13'}
     peerDependencies:
       prisma: '*'
     peerDependenciesMeta:
@@ -3754,7 +3754,7 @@ snapshots:
       '@prisma/driver-adapter-utils': 6.0.1
       async-mutex: 0.5.0
 
-  '@prisma/client@6.0.1(prisma@6.0.1)':
+  '@prisma/client@5.22.0(prisma@6.0.1)':
     optionalDependencies:
       prisma: 6.0.1
 
