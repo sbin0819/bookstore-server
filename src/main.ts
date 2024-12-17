@@ -2,14 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS 설정 (가능하면 app.enableCors()를 listen 전에 설정)
+  // CORS 설정 (Preflight 요청 포함)
   app.enableCors({
     origin: ['http://localhost:3000', 'https://bookstore-mu-blond.vercel.app'],
-    credentials: true,
+    credentials: true, // 쿠키 전송을 허용
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // 허용할 HTTP 메소드
+    allowedHeaders: 'Content-Type, Accept, Authorization', // 허용할 헤더
+    preflightContinue: false, // Preflight 요청을 처리 후 종료
+    optionsSuccessStatus: 204, // Preflight 요청 성공 시 상태 코드
   });
+
   app.use(cookieParser());
 
   // Swagger 설정 시작

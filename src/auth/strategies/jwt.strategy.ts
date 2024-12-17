@@ -3,6 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Request } from 'express';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -14,13 +15,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       // Custom extractor to get JWT from the 'access_token' cookie
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => {
+        (req: Request) => {
           if (req && req.cookies) {
             return req.cookies['access_token'];
           }
-          console.log(req.cookies);
-
-          console.log('No cookies found');
           return null;
         },
       ]),

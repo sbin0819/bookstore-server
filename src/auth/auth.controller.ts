@@ -27,15 +27,15 @@ export class AuthController {
     res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
     if (refresh_token) {
       res.cookie('refresh_token', refresh_token, {
         httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: false,
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
     }
