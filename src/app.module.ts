@@ -7,7 +7,6 @@ import { CategoriesModule } from './categories/categories.module';
 import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SearchModule } from './search/search.module';
-import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,7 +15,6 @@ import { UsersModule } from './users/users.module';
     }),
     SearchModule,
     CategoriesModule,
-    UsersModule,
     AuthModule,
     EventsModule,
     PrismaModule,
