@@ -24,25 +24,19 @@ export class AuthController {
     access_token: string,
     refresh_token: string | null = null,
   ) {
-    const isProduction = process.env.NODE_ENV === 'production';
-
     res.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: isProduction, // 프로덕션에서는 true, 개발에서는 false
-      sameSite: isProduction ? 'none' : 'lax', // 프로덕션에서는 'none', 개발에서는 'lax'
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
       maxAge: 60 * 60 * 1000, // 1 hour
-      path: '/', // 필요 시 경로 설정
-      domain: isProduction ? 'bookstore-mu-blond.vercel.app' : undefined, // 필요 시 도메인 설정
     });
 
     if (refresh_token) {
       res.cookie('refresh_token', refresh_token, {
-        httpOnly: true, // 보안을 위해 true로 설정
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        httpOnly: process.env.NODE_ENV === 'production',
+        secure: false,
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: '/', // 필요 시 경로 설정
-        domain: isProduction ? 'bookstore-mu-blond.vercel.app' : undefined, // 필요 시 도메인 설정
       });
     }
   }
