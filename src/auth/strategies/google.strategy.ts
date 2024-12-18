@@ -31,9 +31,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       provider: 'google',
       providerId: profile.id,
       email: emails && emails[0].value,
-      displayName: name?.givenName + ' ' + name?.familyName,
+      displayName: name?.givenName,
       photo: photos && photos[0].value,
       accessToken,
+      refreshToken,
     };
     // 실제로는 DB에서 유저 조회 혹은 생성 로직 필요
     // const userInDB = await this.userService.findOrCreateUser(user);

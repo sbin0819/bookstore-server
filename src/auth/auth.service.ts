@@ -13,8 +13,6 @@ export class AuthService {
    * Generates an access token for the authenticated Google user.
    */
   async loginWithGoogle(user: any) {
-    // Ensure that 'user' includes the 'id' from the database, not 'googleId'
-    // This typically involves finding or creating the user in the database first
     const existingUser = await this.prisma.user.findUnique({
       where: { email: user.email },
     });
@@ -24,31 +22,24 @@ export class AuthService {
     if (existingUser) {
       userId = existingUser.id;
     } else {
-      // If user does not exist, create one
+      // 사용자가 없으면 새로 생성
       const newUser = await this.prisma.user.create({
         data: {
-          username: user.displayName || user.email, // Adjust as needed
+          username: user.displayName || user.email, // Google 사용자 이름 사용
           email: user.email,
-          // You might want to set a default password or handle it differently
-          password: '', // Or use a random string, depending on your requirements
+          password: '', // 비밀번호는 비워둡니다 (필요한 경우 나중에 설정 가능)
         },
       });
       userId = newUser.id;
     }
 
-    const payload = { email: user.email, sub: userId };
-    const access_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRES_IN || '1h', // Fallback to '1h' if not set
-    });
+    // 액세스 토큰과 리프레시 토큰 생성
+    const tokens = await this.generateTokens(userId, user.email);
 
-    // Optionally, you can also generate a refresh token here
-    // const refresh_token = this.jwtService.sign(payload, {
-    //   secret: process.env.JWT_REFRESH_SECRET,
-    //   expiresIn: '7d',
-    // });
+    // DB에 리프레시 토큰 저장
+    await this.updateRefreshToken(userId, tokens.refresh_token);
 
-    return { access_token /*, refresh_token */ };
+    return tokens;
   }
 
   /**
