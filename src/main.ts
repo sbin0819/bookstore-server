@@ -11,9 +11,10 @@ async function bootstrap() {
     origin: ['http://localhost:3000', 'https://bookstore-mu-blond.vercel.app'],
     credentials: true, // 쿠키 전송을 허용
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // 허용할 HTTP 메소드
-    allowedHeaders: 'Content-Type, Accept, Authorization', // 허용할 헤더
+    allowedHeaders: 'Content-Type, Accept, Authorization', // 허용할 HTTP 헤더
     preflightContinue: false, // Preflight 요청을 처리 후 종료
     optionsSuccessStatus: 204, // Preflight 요청 성공 시 상태 코드
+    exposedHeaders: ['Authorization'], // 브라우저가 접근할 수 있는 헤더
   });
 
   app.use(cookieParser());

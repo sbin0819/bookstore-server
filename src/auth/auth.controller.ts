@@ -17,31 +17,6 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * 쿠키 설정 유틸 함수
-   */
-  private setAuthCookies(
-    res: Response,
-    access_token: string,
-    refresh_token: string | null = null,
-  ) {
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
-
-    if (refresh_token) {
-      res.cookie('refresh_token', refresh_token, {
-        httpOnly: process.env.NODE_ENV === 'production',
-        secure: false,
-        sameSite: 'none',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-    }
-  }
-
-  /**
    * Google OAuth 로그인
    */
   @Get('google')
@@ -57,11 +32,22 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
     const { user } = req;
-    const jwt = await this.authService.loginWithGoogle(user);
-    // Access token만 쿠키에 저장 (여기서는 refresh token 생략 가정)
-    this.setAuthCookies(res, jwt.access_token);
+    const tokens = await this.authService.loginWithGoogle(user);
 
-    return res.redirect(process.env.CLIENT_CALLBACK_URL);
+    // Instead of setting cookies, return tokens in the response body
+    // For OAuth flows, it's common to redirect to the client with tokens
+    // You can encode tokens in query parameters or handle them via a frontend endpoint
+
+    // Example: Redirecting with tokens as query parameters (Not recommended for security reasons)
+    // const clientUrl = `${process.env.CLIENT_CALLBACK_URL}?access_token=${tokens.access_token}`;
+    // return res.redirect(clientUrl);
+
+    // **Recommended Approach**: Redirect to frontend endpoint and have the frontend fetch tokens
+    // Here, we'll return tokens in JSON (assuming the client handles the response accordingly)
+    return res.json({
+      access_token: tokens.access_token,
+      message: 'Google authentication successful',
+    });
   }
 
   /**
@@ -72,12 +58,15 @@ export class AuthController {
     @Body('username') username: string,
     @Body('email') email: string,
     @Body('password') password: string,
-    @Res() res: Response,
   ) {
     const tokens = await this.authService.signUp(username, email, password);
-    this.setAuthCookies(res, tokens.access_token, tokens.refresh_token);
 
-    return res.send({ message: 'SignUp success' });
+    // Return tokens in the response body
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      message: 'SignUp success',
+    };
   }
 
   /**
@@ -87,12 +76,15 @@ export class AuthController {
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
-    @Res() res: Response,
   ) {
     const tokens = await this.authService.signIn(email, password);
-    this.setAuthCookies(res, tokens.access_token, tokens.refresh_token);
 
-    return res.send({ message: 'Login success' });
+    // Return tokens in the response body
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      message: 'Login success',
+    };
   }
 
   /**
@@ -102,12 +94,15 @@ export class AuthController {
   async refresh(
     @Body('userId') userId: number,
     @Body('refreshToken') rt: string,
-    @Res() res: Response,
   ) {
     const tokens = await this.authService.refreshTokens(userId, rt);
-    this.setAuthCookies(res, tokens.access_token, tokens.refresh_token);
 
-    return res.send({ message: 'Tokens refreshed' });
+    // Return new tokens in the response body
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      message: 'Tokens refreshed',
+    };
   }
 
   /**
