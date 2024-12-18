@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SearchModule } from './search/search.module';
+import { CartModule } from './cart/cart.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,6 +19,7 @@ import { SearchModule } from './search/search.module';
     AuthModule,
     EventsModule,
     PrismaModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [AppService],

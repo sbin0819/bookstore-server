@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider     = "sqlite"
-  url          = "file:./dev.db"
-  relationMode = "prisma"
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -16,6 +15,50 @@ model User {
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // 장바구니 아이템: 구매 전 상태
+  cartItems CartItem[]
+
+  // 구매 내역: 구매 완료된 아이템
+  orderItems OrderItem[]
+}
+
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String
+  link        String
+  image       String
+  author      String
+  discount    String
+  publisher   String
+  pubdate     String
+  isbn        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+model CartItem {
+  id       Int      @id @default(autoincrement())
+  quantity Int      @default(1)
+  user     User     @relation(fields: [userId], references: [id])
+  userId   Int
+  book     Book     @relation(fields: [bookId], references: [id])
+  bookId   Int
+  addedAt  DateTime @default(now())
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  quantity    Int      @default(1)
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  book        Book     @relation(fields: [bookId], references: [id])
+  bookId      Int
+  purchasedAt DateTime @default(now())
 }
 
 model Event {

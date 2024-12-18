@@ -144,11 +144,10 @@ export class AuthController {
   /**
    * JWT 보호 라우트 예시
    */
-  @Get('profile')
+  @Get('me')
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@Req() req: any) {
+  getMe(@Req() req: any) {
     return {
-      message: 'Authenticated user profile information',
       user: req.user,
     };
   }
