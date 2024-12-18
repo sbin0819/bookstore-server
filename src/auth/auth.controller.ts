@@ -131,6 +131,16 @@ export class AuthController {
   }
 
   /**
+   * Logout Endpoint
+   */
+  @Post('logout')
+  async logout(@Res() res: Response) {
+    // Clear the refresh_token cookie
+    res.clearCookie('refresh_token');
+    return res.json({ message: 'Logged out successfully' });
+  }
+
+  /**
    * JWT 보호 라우트 예시
    */
   @Get('profile')
