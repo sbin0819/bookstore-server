@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -34,16 +35,15 @@ export class AuthController {
     const { user } = req;
     const tokens = await this.authService.loginWithGoogle(user);
 
-    // Instead of setting cookies, return tokens in the response body
-    // For OAuth flows, it's common to redirect to the client with tokens
-    // You can encode tokens in query parameters or handle them via a frontend endpoint
+    // Set refresh_token in HTTP-only cookie
+    // res.cookie('refresh_token', tokens.refresh_token, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === 'production',
+    //   sameSite: 'strict', // Adjust based on your requirements
+    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // });
 
-    // Example: Redirecting with tokens as query parameters (Not recommended for security reasons)
-    // const clientUrl = `${process.env.CLIENT_CALLBACK_URL}?access_token=${tokens.access_token}`;
-    // return res.redirect(clientUrl);
-
-    // **Recommended Approach**: Redirect to frontend endpoint and have the frontend fetch tokens
-    // Here, we'll return tokens in JSON (assuming the client handles the response accordingly)
+    // Send access_token in response body
     return res.json({
       access_token: tokens.access_token,
       message: 'Google authentication successful',
@@ -58,13 +58,21 @@ export class AuthController {
     @Body('username') username: string,
     @Body('email') email: string,
     @Body('password') password: string,
+    @Res({ passthrough: true }) res: Response, // Allow setting cookies
   ) {
     const tokens = await this.authService.signUp(username, email, password);
 
-    // Return tokens in the response body
+    // Set refresh_token in HTTP-only cookie
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Return access_token in response body
     return {
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
       message: 'SignUp success',
     };
   }
@@ -76,13 +84,21 @@ export class AuthController {
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
+    @Res({ passthrough: true }) res: Response, // Allow setting cookies
   ) {
     const tokens = await this.authService.signIn(email, password);
 
-    // Return tokens in the response body
+    // Set refresh_token in HTTP-only cookie
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Return access_token in response body
     return {
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
       message: 'Login success',
     };
   }
@@ -91,16 +107,25 @@ export class AuthController {
    * 토큰 재발급
    */
   @Post('refresh')
-  async refresh(
-    @Body('userId') userId: number,
-    @Body('refreshToken') rt: string,
-  ) {
-    const tokens = await this.authService.refreshTokens(userId, rt);
+  async refresh(@Req() req: any, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies.refresh_token;
+    if (!refreshToken) {
+      throw new UnauthorizedException('리프레시 토큰이 없습니다.');
+    }
 
-    // Return new tokens in the response body
+    const tokens = await this.authService.refreshTokens(refreshToken);
+
+    // Optionally, update the refresh_token cookie
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Return new access_token in response body
     return {
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
       message: 'Tokens refreshed',
     };
   }

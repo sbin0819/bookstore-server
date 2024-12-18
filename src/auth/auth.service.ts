@@ -163,23 +163,28 @@ export class AuthService {
   }
 
   /**
-   * Refresh Token 검증 후 새로운 Access/Refresh Token 발급
+   * Refresh Token을 DB에서 검증하고 새로운 토큰을 발급
    */
-  async refreshTokens(userId: number, rtFromClient: string) {
-    // 1) DB에서 유저의 refreshToken 가져옴
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.refreshToken) {
-      throw new UnauthorizedException('리프레시 토큰이 없습니다.');
-    }
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
 
-    // 2) 일치 여부 확인
-    if (user.refreshToken !== rtFromClient) {
-      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
-    }
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
 
-    // 3) 토큰 재발급
-    const tokens = await this.generateTokens(user.id, user.email);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
-    return tokens;
+      if (!user || user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+      }
+
+      const tokens = await this.generateTokens(user.id, user.email);
+      await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+      return tokens;
+    } catch (error) {
+      throw new UnauthorizedException('리프레시 토큰이 유효하지 않습니다.');
+    }
   }
 }
